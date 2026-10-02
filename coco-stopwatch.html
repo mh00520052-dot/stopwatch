@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>코코 스탑워치</title>
+<style>
+  :root { --bg1:#1a0b2e; --bg2:#3b1456; --card:rgba(30,12,50,.82); --marigold:#ff9f1c; --pink:#ff4fa3; --teal:#2ec4b6; --text:#fff3e0; --muted:#c3a6d8; --line:rgba(255,159,28,.3); }
+  * { box-sizing:border-box; }
+  body { margin:0; min-height:100vh; color:var(--text); font-family:"Segoe UI","Malgun Gothic",sans-serif; background:radial-gradient(ellipse at top,var(--bg2),var(--bg1) 70%) fixed; padding:0 16px 40px; overflow-x:hidden; }
+  /* papel picado */
+  .picado { display:flex; justify-content:center; gap:0; margin:0 -16px 8px; }
+  .picado i { flex:1; height:34px; clip-path:polygon(0 0,100% 0,100% 70%,50% 100%,0 70%); opacity:.9; }
+  .picado i:nth-child(4n+1){background:var(--marigold)} .picado i:nth-child(4n+2){background:var(--pink)}
+  .picado i:nth-child(4n+3){background:var(--teal)} .picado i:nth-child(4n){background:#8e5bd9}
+  h1 { text-align:center; margin:12px 0 2px; font-size:26px; color:var(--marigold); letter-spacing:1px; }
+  .sub { text-align:center; color:var(--muted); font-size:13px; margin-bottom:16px; }
+  .wrap { max-width:460px; margin:0 auto; }
+  .tabs { display:flex; gap:8px; margin-bottom:14px; }
+  .tabs button { flex:1; padding:11px; border-radius:12px; border:1px solid var(--line); background:transparent; color:var(--muted); font-weight:600; font-size:15px; cursor:pointer; }
+  .tabs button.on { background:var(--marigold); color:#2a1030; border-color:var(--marigold); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:24px 20px; box-shadow:0 10px 40px rgba(0,0,0,.4); }
+  .hide { display:none; }
+  #display { font-variant-numeric:tabular-nums; font-size:clamp(42px,12vw,60px); text-align:center; font-weight:300; margin:6px 0 22px; text-shadow:0 0 18px rgba(255,159,28,.55); }
+  #display small { font-size:.5em; color:var(--marigold); }
+  .btns { display:flex; gap:10px; }
+  .btns button, .go { flex:1; padding:14px; font-size:16px; font-weight:700; border:none; border-radius:12px; cursor:pointer; background:var(--marigold); color:#2a1030; }
+  .btns button.secondary { background:transparent; color:var(--text); border:1px solid var(--line); }
+  .btns button.stop { background:var(--pink); color:#fff; }
+  button:disabled { opacity:.35; cursor:default; }
+  ol { list-style:none; padding:0; margin:18px 0 0; max-height:220px; overflow-y:auto; }
+  li { display:flex; justify-content:space-between; padding:9px 4px; border-top:1px solid var(--line); font-variant-numeric:tabular-nums; }
+  li span:first-child { color:var(--muted); }
+  .hint { text-align:center; color:var(--muted); font-size:12px; margin-top:14px; }
+  label { display:block; font-size:13px; color:var(--muted); margin:0 0 4px; }
+  .row { display:flex; gap:10px; margin-bottom:14px; }
+  .row > div { flex:1; }
+  input { width:100%; padding:11px; border-radius:10px; border:1px solid var(--line); background:rgba(255,255,255,.07); color:var(--text); font-size:15px; color-scheme:dark; }
+  .stat { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:16px 0; }
+  .stat div { background:rgba(255,255,255,.06); border-radius:14px; padding:12px; text-align:center; }
+  .stat b { display:block; font-size:22px; font-variant-numeric:tabular-nums; }
+  .stat span { font-size:12px; color:var(--muted); }
+  .alive b { color:var(--teal); } .dead b { color:var(--pink); }
+  .big { text-align:center; font-size:15px; color:var(--muted); }
+  .big b { display:block; font-size:clamp(26px,8vw,36px); font-variant-numeric:tabular-nums; color:var(--marigold); text-shadow:0 0 14px rgba(255,159,28,.5); }
+  .bar { height:14px; border-radius:8px; background:rgba(255,255,255,.1); overflow:hidden; margin:14px 0 6px; }
+  .bar div { height:100%; background:linear-gradient(90deg,var(--teal),var(--marigold),var(--pink)); transition:width .5s; }
+  #candles { display:flex; flex-wrap:wrap; gap:5px; justify-content:center; margin:12px 0; }
+  .c { width:14px; height:22px; border-radius:3px 3px 2px 2px; position:relative; background:#5b4a68; }
+  .c.lit { background:#fff3e0; }
+  .c.lit::before { content:""; position:absolute; left:3px; top:-9px; width:8px; height:11px; border-radius:50% 50% 50% 50%/65% 65% 35% 35%; background:radial-gradient(circle at 50% 70%,#fff59d,var(--marigold)); box-shadow:0 0 8px var(--marigold); animation:fl 1s infinite alternate; }
+  @keyframes fl { to { transform:scale(.85) translateY(1px); opacity:.85; } }
+  .quote { text-align:center; font-style:italic; color:var(--muted); font-size:13px; margin-top:14px; min-height:2.6em; }
+  .hero { display:flex; align-items:flex-end; justify-content:center; gap:10px; }
+  .hero svg { width:84px; height:84px; flex:none; filter:drop-shadow(0 4px 10px rgba(0,0,0,.5)); }
+  .hero svg:last-child { transform:scaleX(-1); }
+  .hero div { text-align:center; }
+  img.miguel { object-fit:contain; display:block; filter:drop-shadow(0 4px 10px rgba(0,0,0,.5)); }
+  .hero img.miguel { width:84px; height:84px; flex:none; }
+  .scene .end img.miguel { width:56px; height:56px; margin:0 auto 2px; }
+  .me img.miguel { width:46px; height:46px; }
+  .scene { position:relative; padding:96px 0 14px; }
+  .scene .end { position:absolute; top:0; text-align:center; font-size:11px; color:var(--muted); width:70px; }
+  .scene .end.l { left:0; } .scene .end.r { right:0; }
+  .scene .end svg { width:56px; height:56px; display:block; margin:0 auto 2px; }
+  .bridge { position:relative; margin:0 28px; height:16px; border-radius:10px; background:linear-gradient(90deg,var(--marigold),#ff7b54 55%,#8e5bd9); box-shadow:0 0 18px rgba(255,159,28,.45); }
+  .petals { position:absolute; inset:0; border-radius:10px; background:repeating-linear-gradient(90deg,transparent 0 10px,rgba(255,255,255,.28) 10px 12px); }
+  .me { position:absolute; bottom:6px; width:46px; transform:translateX(-50%); text-align:center; transition:left .6s; left:0; }
+  .me svg { width:46px; height:46px; display:block; }
+  .me em { position:absolute; top:-18px; left:50%; transform:translateX(-50%); font-style:normal; font-size:11px; font-weight:700; color:#2a1030; background:var(--marigold); border-radius:8px; padding:1px 6px; white-space:nowrap; }
+  .twin { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0 10px; }
+  .twin div { border-radius:16px; padding:14px 8px; text-align:center; }
+  .twin .alive { background:rgba(46,196,182,.14); border:1px solid rgba(46,196,182,.5); }
+  .twin .dead { background:rgba(255,79,163,.13); border:1px solid rgba(255,79,163,.5); }
+  .twin span { display:block; font-size:12px; color:var(--muted); }
+  .twin b { font-size:clamp(26px,8vw,36px); font-variant-numeric:tabular-nums; }
+  .twin small { color:var(--muted); margin-left:2px; }
+  .clock { text-align:center; border-radius:14px; padding:10px; background:rgba(0,0,0,.25); }
+  .clock span { display:block; font-size:12px; color:var(--muted); }
+  .clock b { font-size:24px; font-variant-numeric:tabular-nums; }
+  .note { font-size:11px; color:var(--muted); text-align:center; margin-top:10px; }
+</style>
+</head>
+<body>
+<div class="picado" id="picado"></div>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- 기타 치는 소년 (직접 그린 일러스트) -->
+    <symbol id="boy" viewBox="0 0 64 64">
+      <rect x="18" y="40" width="28" height="22" rx="8" fill="#d62839"/>
+      <circle cx="32" cy="28" r="14" fill="#e0a070"/>
+      <path d="M17 24c0-12 8-16 15-16s15 4 15 16c-4-6-10-8-15-8s-11 2-15 8z" fill="#2b1b17"/>
+      <ellipse cx="32" cy="14" rx="19" ry="4" fill="#f4ede0"/>
+      <circle cx="26" cy="29" r="2" fill="#2b1b17"/><circle cx="38" cy="29" r="2" fill="#2b1b17"/>
+      <path d="M26 35q6 6 12 0" stroke="#2b1b17" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <g transform="rotate(-25 44 50)"><ellipse cx="46" cy="52" rx="9" ry="8" fill="#c97b2d"/><circle cx="46" cy="52" r="3" fill="#2b1b17"/><rect x="45" y="30" width="3" height="20" fill="#6b3f1d"/></g>
+    </symbol>
+    <!-- 해골 친구 -->
+    <symbol id="skel" viewBox="0 0 64 64">
+      <rect x="18" y="42" width="28" height="20" rx="6" fill="#2ec4b6"/>
+      <path d="M24 46v10M32 46v10M40 46v10" stroke="#f4ede0" stroke-width="2"/>
+      <ellipse cx="32" cy="26" rx="16" ry="18" fill="#f8f3e6"/>
+      <circle cx="25" cy="25" r="6" fill="#2b1b17"/><circle cx="39" cy="25" r="6" fill="#2b1b17"/>
+      <circle cx="25" cy="25" r="2.5" fill="#ff4fa3"/><circle cx="39" cy="25" r="2.5" fill="#ff9f1c"/>
+      <path d="M30 32l2 4 2-4z" fill="#2b1b17"/>
+      <path d="M22 41h20" stroke="#2b1b17" stroke-width="2"/><path d="M26 39v4M32 39v4M38 39v4" stroke="#2b1b17" stroke-width="2"/>
+      <circle cx="32" cy="9" r="3" fill="#ff9f1c"/><circle cx="24" cy="11" r="3" fill="#ff4fa3"/><circle cx="40" cy="11" r="3" fill="#ff4fa3"/>
+    </symbol>
+  </defs>
+</svg>
+<div class="wrap">
+  <div class="hero">
+    <svg viewBox="0 0 64 64"><use href="#boy"/></svg>
+    <div><h1>Remember Me<br><small style="font-size:.55em;font-weight:400">Recuérdame · 나를 기억해줘</small></h1><div class="sub">죽은 자의 날, 시간을 기억하는 스탑워치</div></div>
+    <svg viewBox="0 0 64 64"><use href="#skel"/></svg>
+  </div>
+
+  <div class="tabs">
+    <button id="t1" class="on">⏱ 스탑워치</button>
+    <button id="t2">🕯 생과 사</button>
+  </div>
+
+  <div class="card" id="p1">
+    <div id="display">00:00<small>.00</small></div>
+    <div class="btns">
+      <button id="lap" class="secondary" disabled>랩</button>
+      <button id="start">시작</button>
+    </div>
+    <ol id="laps"></ol>
+    <div class="hint">Space: 시작/정지 · L: 랩 · R: 초기화</div>
+  </div>
+
+  <div class="card hide" id="p2">
+    <div class="row">
+      <div><label for="birth">생년월일</label><input type="date" id="birth"></div>
+      <div><label for="span">기대 수명(세)</label><input type="number" id="span" min="1" max="130" value="80"></div>
+    </div>
+    <div id="life" class="hide">
+      <div class="scene">
+        <div class="end l"><svg viewBox="0 0 64 64"><use href="#boy"/></svg><span>산 자의 땅</span></div>
+        <div class="end r"><svg viewBox="0 0 64 64"><use href="#skel"/></svg><span>죽은 자의 땅</span></div>
+        <div class="bridge"><div class="petals" id="petals"></div><div class="me" id="me"><em id="mePct"></em><svg viewBox="0 0 64 64"><use href="#boy"/></svg></div></div>
+      </div>
+      <div class="hint" id="pct"></div>
+      <div class="twin">
+        <div class="alive"><span>🌼 지금까지 산 날</span><b id="lived">0</b><small>일</small></div>
+        <div class="dead"><span>💀 죽을 날까지</span><b id="left">0</b><small>일</small></div>
+      </div>
+      <div class="clock dead"><span>저승 문이 열리기까지</span><b id="cd">0일 00:00:00</b></div>
+      <div class="stat">
+        <div class="alive"><b id="secs">0</b><span>숨 쉰 시간 (초)</span></div>
+        <div class="dead"><b id="weeksLeft">0</b><span>남은 주말 (주)</span></div>
+      </div>
+      <div class="hint">🕯 촛불 한 개 = 1년 (꺼진 초 = 지나간 해)</div>
+      <div id="candles"></div>
+      <div class="big">죽은 자의 날(11/1)까지<b id="dod">-</b></div>
+      <div class="quote" id="quote"></div>
+    </div>
+    <div class="note" id="empty">생년월일을 입력하면 촛불이 켜집니다. 🕯<br>※ 재미로 보는 계산이며 실제 수명 예측이 아닙니다.</div>
+  </div>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const p2 = n => String(n).padStart(2, '0');
+  const DAY = 86400000;
+
+  // 같은 폴더에 miguel.png / .jpg / .webp 가 있으면 소년 그림 대신 사용
+  (function useMiguel(exts) {
+    const ext = exts.shift();
+    if (!ext) return;
+    const img = new Image();
+    img.onload = () => document.querySelectorAll('svg:has(use[href="#boy"])').forEach(s => {
+      const el = document.createElement('img');
+      el.src = img.src; el.alt = '미겔'; el.className = 'miguel';
+      s.replaceWith(el);
+    });
+    img.onerror = () => useMiguel(exts);
+    img.src = 'miguel.' + ext;
+  })(['png', 'jpg', 'webp']);
+
+  // papel picado
+  $('picado').innerHTML = '<i></i>'.repeat(14);
+
+  // 탭
+  function tab(n) {
+    $('p1').classList.toggle('hide', n !== 1); $('p2').classList.toggle('hide', n !== 2);
+    $('t1').classList.toggle('on', n === 1); $('t2').classList.toggle('on', n === 2);
+  }
+  $('t1').onclick = () => tab(1); $('t2').onclick = () => tab(2);
+
+  // ---------- 스탑워치 ----------
+  let running = false, startTime = 0, elapsed = 0, lastLap = 0, raf, laps = [];
+  function fmt(ms) {
+    const cs = Math.floor(ms / 10) % 100, s = Math.floor(ms / 1000) % 60,
+          m = Math.floor(ms / 60000) % 60, h = Math.floor(ms / 3600000);
+    return (h ? p2(h) + ':' : '') + p2(m) + ':' + p2(s) + '.' + p2(cs);
+  }
+  function render() {
+    const t = fmt(elapsed), i = t.lastIndexOf('.');
+    $('display').innerHTML = t.slice(0, i) + '<small>' + t.slice(i) + '</small>';
+  }
+  function tick() { elapsed = performance.now() - startTime; render(); raf = requestAnimationFrame(tick); }
+  function toggle() {
+    if (running) {
+      cancelAnimationFrame(raf); running = false;
+      $('start').textContent = '계속'; $('start').classList.remove('stop'); $('lap').textContent = '초기화';
+    } else {
+      startTime = performance.now() - elapsed; running = true; raf = requestAnimationFrame(tick);
+      $('start').textContent = '정지'; $('start').classList.add('stop');
+      $('lap').textContent = '랩'; $('lap').disabled = false;
+    }
+  }
+  function reset() {
+    cancelAnimationFrame(raf); running = false; elapsed = 0; lastLap = 0; laps = [];
+    $('laps').innerHTML = ''; $('start').textContent = '시작'; $('start').classList.remove('stop');
+    $('lap').textContent = '랩'; $('lap').disabled = true; render();
+  }
+  function lap() {
+    if (!running) return reset();
+    laps.push({ split: elapsed - lastLap }); lastLap = elapsed;
+    const li = document.createElement('li');
+    li.innerHTML = '<span>🌼 ' + laps.length + '</span><span>' + fmt(laps.at(-1).split) + '</span><span>' + fmt(elapsed) + '</span>';
+    $('laps').prepend(li);
+  }
+  $('start').onclick = toggle; $('lap').onclick = lap;
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT') return;
+    if (e.code === 'Space') { e.preventDefault(); toggle(); }
+    else if (e.key.toLowerCase() === 'l' && running) lap();
+    else if (e.key.toLowerCase() === 'r' && !running) reset();
+  });
+
+  // ---------- 생과 사 ----------
+  const quotes = [
+    '"기억해 줘요 — Recuérdame"',
+    '"가족은 죽음보다 강해요."',
+    '"기억되는 한, 사람은 진짜 죽지 않아요."',
+    '"오늘이 당신의 가장 젊은 날이에요."',
+    '"Siempre sigue tu corazón."'
+  ];
+  const store = {
+    get(k, d) { try { return localStorage.getItem(k) || d; } catch { return d; } },
+    set(k, v) { try { localStorage.setItem(k, v); } catch {} }
+  };
+  $('birth').value = store.get('coco-birth', '');
+  $('span').value = store.get('coco-span', '80');
+  let qi = 0, candleKey = '';
+
+  function life() {
+    const b = $('birth').value, span = parseInt($('span').value, 10);
+    const ok = b && span > 0;
+    $('life').classList.toggle('hide', !ok); $('empty').classList.toggle('hide', !!ok);
+    if (!ok) return;
+    const birth = new Date(b + 'T00:00:00'), now = new Date();
+    const end = new Date(birth); end.setFullYear(birth.getFullYear() + span);
+    const lived = now - birth, total = end - birth, left = Math.max(0, end - now);
+    const L = n => Math.floor(n).toLocaleString('ko-KR');
+    $('secs').textContent = L(Math.max(0, lived) / 1000);
+    $('lived').textContent = L(Math.max(0, lived) / DAY);
+    $('left').textContent = L(left / DAY);
+    $('weeksLeft').textContent = L(left / (7 * DAY));
+    const pct = Math.min(100, Math.max(0, lived / total * 100));
+    $('me').style.left = pct + '%';
+    $('mePct').textContent = pct.toFixed(1) + '%';
+    const ls = Math.floor(left / 1000);
+    $('cd').textContent = L(ls / 86400) + '일 ' + p2(Math.floor(ls % 86400 / 3600)) + ':' + p2(Math.floor(ls % 3600 / 60)) + ':' + p2(ls % 60);
+    $('pct').textContent = '생의 ' + pct.toFixed(2) + '% 를 지나왔어요 · 예상 ' + end.getFullYear() + '년 ' + (end.getMonth() + 1) + '월 ' + end.getDate() + '일';
+    // 촛불: 1년 = 촛불 1개. 살아온 해는 꺼지고 남은 해는 켜져 있음
+    const livedYears = Math.min(span, Math.floor(Math.max(0, lived) / (365.25 * DAY)));
+    const key = span + ':' + livedYears;
+    if (key !== candleKey) {
+      candleKey = key;
+      $('candles').innerHTML = Array.from({ length: span }, (_, i) => '<div class="c' + (i >= livedYears ? ' lit' : '') + '"></div>').join('');
+    }
+    // 죽은 자의 날 D-day
+    let dod = new Date(now.getFullYear(), 10, 1);
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    if (today > dod) dod = new Date(now.getFullYear() + 1, 10, 1);
+    const d = Math.round((dod - today) / DAY);
+    $('dod').textContent = d === 0 ? '🎉 오늘이에요!' : 'D-' + d;
+  }
+  ['birth', 'span'].forEach(id => $(id).addEventListener('input', () => {
+    store.set('coco-birth', $('birth').value); store.set('coco-span', $('span').value); life();
+  }));
+  setInterval(life, 1000); life();
+  setInterval(() => { $('quote').textContent = quotes[qi++ % quotes.length]; }, 5000);
+  $('quote').textContent = quotes[qi++];
+</script>
+</body>
+</html>

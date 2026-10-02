@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>스탑워치</title>
+<style>
+  :root { --bg:#f4f5f7; --card:#fff; --text:#1d2330; --muted:#7a8294; --accent:#2f6fed; --stop:#e5484d; --line:#e6e8ee; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#12151c; --card:#1b1f2a; --text:#f0f2f7; --muted:#8b93a7; --accent:#5b8cff; --stop:#ff6369; --line:#2a3040; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--bg); color:var(--text); font-family:"Segoe UI","Malgun Gothic",sans-serif; padding:16px; }
+  .card { width:100%; max-width:420px; background:var(--card); border-radius:20px; padding:28px 24px; box-shadow:0 8px 30px rgba(0,0,0,.08); }
+  #display { font-variant-numeric:tabular-nums; font-size:clamp(44px,13vw,64px); font-weight:300; text-align:center; letter-spacing:1px; margin:8px 0 24px; }
+  #display small { font-size:.5em; color:var(--muted); }
+  .btns { display:flex; gap:12px; }
+  button { flex:1; padding:14px; font-size:16px; font-weight:600; border:none; border-radius:12px; cursor:pointer; color:#fff; background:var(--accent); }
+  button.secondary { background:transparent; color:var(--text); border:1px solid var(--line); }
+  button.stop { background:var(--stop); }
+  button:disabled { opacity:.4; cursor:default; }
+  ol { list-style:none; padding:0; margin:20px 0 0; max-height:240px; overflow-y:auto; }
+  li { display:flex; justify-content:space-between; padding:10px 4px; border-top:1px solid var(--line); font-variant-numeric:tabular-nums; }
+  li span:first-child { color:var(--muted); }
+  .hint { text-align:center; color:var(--muted); font-size:12px; margin-top:16px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div id="display">00:00<small>.00</small></div>
+  <div class="btns">
+    <button id="lap" class="secondary" disabled>랩</button>
+    <button id="start">시작</button>
+  </div>
+  <ol id="laps"></ol>
+  <div class="hint">Space: 시작/정지 · L: 랩 · R: 초기화</div>
+</div>
+<script>
+  const $ = id => document.getElementById(id);
+  let running = false, startTime = 0, elapsed = 0, lastLap = 0, raf, laps = [];
+
+  function fmt(ms) {
+    const cs = Math.floor(ms / 10) % 100;
+    const s = Math.floor(ms / 1000) % 60;
+    const m = Math.floor(ms / 60000) % 60;
+    const h = Math.floor(ms / 3600000);
+    const p = n => String(n).padStart(2, '0');
+    return (h ? p(h) + ':' : '') + p(m) + ':' + p(s) + '.' + p(cs);
+  }
+  function render() {
+    const t = fmt(elapsed), i = t.lastIndexOf('.');
+    $('display').innerHTML = t.slice(0, i) + '<small>' + t.slice(i) + '</small>';
+  }
+  function tick() {
+    elapsed = performance.now() - startTime;
+    render();
+    raf = requestAnimationFrame(tick);
+  }
+  function toggle() {
+    if (running) {
+      cancelAnimationFrame(raf);
+      running = false;
+      $('start').textContent = '계속';
+      $('start').classList.remove('stop');
+      $('lap').textContent = '초기화';
+    } else {
+      startTime = performance.now() - elapsed;
+      running = true;
+      raf = requestAnimationFrame(tick);
+      $('start').textContent = '정지';
+      $('start').classList.add('stop');
+      $('lap').textContent = '랩';
+      $('lap').disabled = false;
+    }
+  }
+  function reset() {
+    cancelAnimationFrame(raf);
+    running = false; elapsed = 0; lastLap = 0; laps = [];
+    $('laps').innerHTML = '';
+    $('start').textContent = '시작';
+    $('start').classList.remove('stop');
+    $('lap').textContent = '랩';
+    $('lap').disabled = true;
+    render();
+  }
+  function lap() {
+    if (!running) return reset();
+    laps.push({ split: elapsed - lastLap, total: elapsed });
+    lastLap = elapsed;
+    const li = document.createElement('li');
+    li.innerHTML = '<span>랩 ' + laps.length + '</span><span>' + fmt(laps.at(-1).split) + '</span><span>' + fmt(elapsed) + '</span>';
+    $('laps').prepend(li);
+  }
+  $('start').onclick = toggle;
+  $('lap').onclick = lap;
+  document.addEventListener('keydown', e => {
+    if (e.code === 'Space') { e.preventDefault(); toggle(); }
+    else if (e.key === 'l' || e.key === 'L') { if (running) lap(); }
+    else if (e.key === 'r' || e.key === 'R') { if (!running) reset(); }
+  });
+</script>
+</body>
+</html>
