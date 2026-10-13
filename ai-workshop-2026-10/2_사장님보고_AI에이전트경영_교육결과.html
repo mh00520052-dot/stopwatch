@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI 에이전트 경영 교육 결과 보고</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f6f9; --paper:#ffffff; --ink:#14202e; --sub:#566273; --line:#e3e8ef;
+  --navy:#1f3a5f; --accent:#0e7c86; --accent-soft:#e3f3f4; --warn:#b4541a; --warn-soft:#fbeee4;
+  --chip:#eef2f7;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f141b; --paper:#161d27; --ink:#e7edf5; --sub:#9aa7b8; --line:#273242;
+    --navy:#9cc3ee; --accent:#4fc4cd; --accent-soft:#16343a; --warn:#f0a36b; --warn-soft:#3a2618; --chip:#1f2835;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f141b; --paper:#161d27; --ink:#e7edf5; --sub:#9aa7b8; --line:#273242;
+  --navy:#9cc3ee; --accent:#4fc4cd; --accent-soft:#16343a; --warn:#f0a36b; --warn-soft:#3a2618; --chip:#1f2835;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif;line-height:1.65;font-size:16px;word-break:keep-all}
+.wrap{max-width:1040px;margin:0 auto;padding:40px 16px 64px}
+.paper{background:var(--paper);border-radius:18px;padding:48px 52px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 8px 28px rgba(20,32,46,.06)}
+@media (max-width:720px){.paper{padding:28px 20px}}
+.eyebrow{font-size:13px;letter-spacing:.08em;color:var(--accent);font-weight:700}
+h1{font-size:34px;line-height:1.3;margin:6px 0 10px;font-weight:900;color:var(--ink)}
+@media (max-width:720px){h1{font-size:26px}}
+.meta{color:var(--sub);font-size:14px}
+.meta b{color:var(--ink);font-weight:500}
+h2{font-size:21px;margin:48px 0 14px;color:var(--navy);font-weight:700}
+h2 small{font-size:13px;color:var(--sub);font-weight:400;margin-left:8px}
+p{margin:0 0 10px}
+.bluf{margin-top:28px;background:var(--accent-soft);border-radius:14px;padding:24px 26px}
+.bluf h3{margin:0 0 12px;font-size:15px;color:var(--accent);letter-spacing:.04em}
+.bluf ol{margin:0;padding-left:22px}
+.bluf li{margin:6px 0;font-size:16.5px}
+.bluf li b{color:var(--ink)}
+.grid{display:grid;gap:14px}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+@media (max-width:860px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:1fr}}
+@media (max-width:520px){.g4,.g2{grid-template-columns:1fr}}
+.card{background:var(--chip);border-radius:12px;padding:18px}
+.stat{font-size:30px;font-weight:900;color:var(--accent);line-height:1.1}
+.stat span{font-size:15px;font-weight:500;color:var(--sub);margin-left:3px}
+.card h4{margin:8px 0 4px;font-size:15px}
+.card p{font-size:13.5px;color:var(--sub);margin:0}
+.fn{font-size:12.5px;color:var(--sub);margin-top:10px}
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;counter-reset:s}
+@media (max-width:860px){.steps{grid-template-columns:1fr}}
+.step{position:relative;background:var(--paper);border:1.5px solid var(--line);border-radius:12px;padding:16px 14px}
+.step .n{display:inline-block;width:26px;height:26px;border-radius:50%;background:var(--navy);color:var(--paper);font-size:13px;font-weight:700;text-align:center;line-height:26px}
+.step h4{margin:10px 0 4px;font-size:16px}
+.step .k{font-size:12px;color:var(--accent);font-weight:700}
+.step p{font-size:13px;color:var(--sub);margin:6px 0 0}
+.step.hl{border-color:var(--accent);background:var(--accent-soft)}
+.colors{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.c{display:flex;align-items:center;gap:8px;background:var(--chip);border-radius:999px;padding:6px 14px 6px 8px;font-size:14px}
+.dot{width:16px;height:16px;border-radius:50%}
+.bar{display:flex;height:46px;border-radius:10px;overflow:hidden;margin:12px 0 6px;font-weight:700;font-size:14px;color:#fff}
+.bar div{display:flex;align-items:center;padding:0 12px;white-space:nowrap}
+.legend{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;font-size:13.5px;color:var(--sub)}
+@media (max-width:720px){.legend{grid-template-columns:1fr}}
+.legend b{color:var(--ink)}
+table{width:100%;border-collapse:collapse;font-size:14.5px}
+th{text-align:left;font-size:13px;color:var(--sub);font-weight:500;padding:10px 12px;background:var(--chip)}
+td{padding:12px;vertical-align:top;border-bottom:1px solid var(--line)}
+td:first-child{font-weight:700;white-space:nowrap}
+@media (max-width:620px){td:first-child{white-space:normal}}
+.tl{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media (max-width:760px){.tl{grid-template-columns:1fr}}
+.ph{border-radius:12px;padding:20px;background:var(--chip);position:relative}
+.ph .d{font-size:13px;color:var(--accent);font-weight:700}
+.ph h4{margin:4px 0 10px;font-size:17px}
+.ph ul{margin:0;padding-left:18px;font-size:14px}
+.ph li{margin:4px 0}
+.ask{margin-top:18px;border-radius:14px;padding:22px 24px;background:var(--navy);color:var(--paper)}
+.ask h3{margin:0 0 8px;font-size:16px}
+.ask ul{margin:0;padding-left:20px}
+.ask li{margin:4px 0}
+.warnbox{background:var(--warn-soft);border-radius:12px;padding:16px 18px;font-size:14px}
+.warnbox b{color:var(--warn)}
+.foot{margin-top:44px;font-size:12.5px;color:var(--sub);line-height:1.7}
+.foot b{color:var(--ink)}
+a{color:var(--accent)}
+.quote{font-size:18px;font-weight:700;margin:6px 0 2px}
+</style>
+</head>
+<body>
+<div class="wrap"><div class="paper">
+
+<div class="eyebrow">사장님 보고 · 2026년 10월</div>
+<h1>AI 에이전트 경영 교육 결과 보고</h1>
+<div class="meta"><b>교육</b> IGM ‘에이전트 경영: Claude 실습 워크숍’ · 10월 2일, 10월 8일(총 약 11시간)<br><b>참석</b> 조민희 이사(임상의학본부장), 김현수 본부장(제일파마홀딩스 경영지원본부) · <b>보고</b> 임상의학본부</div>
+
+<div class="bluf">
+  <h3>결론부터</h3>
+  <ol>
+    <li><b>AI 활용의 단위가 ‘대화’에서 ‘에이전트 팀 운영’으로 바뀌었습니다.</b> 실습에서 개발 경험이 없는 임원들이 데이터 분석 보고서, 대시보드, 웹 문서를 10~15분 안에 만들었습니다.</li>
+    <li><b>성과를 가르는 것은 어떤 모델을 쓰느냐가 아니라, 회사 고유의 노하우를 ‘스킬’로 쌓고 사람과 에이전트가 함께 일하는 조직을 설계하는 것입니다.</b></li>
+    <li><b>제언:</b> 90일 파일럿으로 본부별 스킬 1개, 사내 스킬 라이브러리, AI 사용·보안 가이드를 동시에 시작할 것을 건의드립니다. 본부별 적용 후보는 별첨 「본부별 AI 적용 지도」에 정리했습니다.</li>
+  </ol>
+</div>
+
+<h2>실습에서 직접 확인한 것<small>강의 중 측정·언급된 소요 시간</small></h2>
+<div class="grid g4">
+  <div class="card"><div class="stat">15<span>분</span></div><h4>엑셀 → 경영 보고 슬라이드</h4><p>탐색적 분석, 시사점 5개, 차트까지 자동 생성. 강사는 통상 1주 걸리는 작업이라고 평가했습니다.</p></div>
+  <div class="card"><div class="stat">12<span>분</span></div><h4>채용 공고 수집·정리</h4><p>브라우저 연동으로 3개 사이트를 수집해 구글 시트에 정리하고 피벗 요약까지 했습니다.</p></div>
+  <div class="card"><div class="stat">10<span>분</span></div><h4>멀티 에이전트 웹 문서</h4><p>목표를 고정하면 에이전트 여러 개가 역할을 나눠 자료를 조사하고 디자인과 음성 낭독까지 붙였습니다.</p></div>
+  <div class="card"><div class="stat">40<span>분</span></div><h4>기사 132건 논조 분석</h4><p>강사 사례입니다. 기사를 수집해 논조를 점수화하고 쟁점 5개로 분류했습니다.</p></div>
+</div>
+<p class="fn">소요 시간은 강의 현장의 시연 값이며, 산출물의 정확성은 별도 검증이 필요합니다. 교육에서도 ‘생성’과 ‘검증’을 분리하는 것을 핵심 원칙으로 강조했습니다.</p>
+
+<h2>에이전트 역량의 5단계</h2>
+<div class="steps">
+  <div class="step"><span class="n">1</span><div class="k">소환</div><h4>멀티 페르소나</h4><p>작성자 1명과 평가자 4명으로 역할을 나누고 10점 만점에서 9.5점 이상이 될 때까지 반복합니다.</p></div>
+  <div class="step"><span class="n">2</span><div class="k">연결</div><h4>MCP·도구</h4><p>DART, 카카오톡, 브라우저 같은 외부 시스템을 표준 규약으로 연결합니다.</p></div>
+  <div class="step hl"><span class="n">3</span><div class="k">계약</div><h4>스킬</h4><p>반복 업무의 노하우를 문서로 규격화합니다. 회사의 자산으로 쌓이는 단계입니다.</p></div>
+  <div class="step"><span class="n">4</span><div class="k">조합</div><h4>멀티 에이전트</h4><p>여러 스킬과 에이전트를 팀처럼 엮어 복잡한 과제를 나눠서 처리합니다.</p></div>
+  <div class="step"><span class="n">5</span><div class="k">자율 루프</div><h4>/goal</h4><p>목표를 고정하면 달성할 때까지 스스로 반복 실행합니다.</p></div>
+</div>
+<p class="fn">교육 1일차에 1~3단계를, 2일차에 2~5단계를 실습했습니다. 회사에 남는 자산은 3단계 ‘스킬’입니다.</p>
+
+<h2>품질은 이렇게 만듭니다</h2>
+<div class="colors">
+  <div class="c"><span class="dot" style="background:#1b1b1b"></span>Black 작성·팀장</div>
+  <div class="c"><span class="dot" style="background:#c8372d"></span>Red 비판(먼저 평가)</div>
+  <div class="c"><span class="dot" style="background:#9aa3ad"></span>Silver 업계 전문가</div>
+  <div class="c"><span class="dot" style="background:#2f6fd0"></span>Blue 옹호</div>
+  <div class="c"><span class="dot" style="background:#c99a1c"></span>Gold 독자·의사결정자</div>
+</div>
+<p>사람에게는 “10점 만점에 9.5점이 될 때까지 둘이 계속 다듬어 오라”고 시킬 수 없지만, AI에게는 시킬 수 있습니다. 평가자 중 비판 역할(Red)을 먼저 세우면 동조 편향이 줄어듭니다. 다만 같은 모델 안의 역할극은 지식의 한계와 편향을 공유하므로, 사실관계는 원본 대조 검증이나 다른 모델과의 교차 검토로 보완해야 합니다.</p>
+<p class="quote">“AI가 95%를 만들고, 마지막 5%의 품질은 사람이 결정합니다.”</p>
+<p class="fn">강사(강정우, AI 에이전트 스타트업 AI 전략총괄) 발언</p>
+
+<h2>경영 관점 시사점<small>강사 권고: 경영진의 고민 시간 배분</small></h2>
+<div class="bar">
+  <div style="background:#7d8a9c;width:10%">10%</div>
+  <div style="background:#2f7f9a;width:20%">20%</div>
+  <div style="background:#1f3a5f;width:70%">70% 하이브리드 리소스 관리</div>
+</div>
+<div class="legend">
+  <div><b>모델 선택 (10%)</b><br>모델은 계속 바뀝니다. 이미 정한 도구를 유지하고, 교체 논의에 시간을 쓰지 않는 것이 합리적입니다.</div>
+  <div><b>컴퍼니 브레인 (20%)</b><br>사내 스킬 라이브러리(직원의 암묵지)와 시스템 연결(MCP)을 합쳐 AI가 읽을 수 있는 회사 지식 기반을 만듭니다.</div>
+  <div><b>하이브리드 리소스 관리 (70%)</b><br>어떤 일을 사람이, 어떤 일을 에이전트가 할지 정하고, 에이전트 리더를 육성하며, 성과를 모니터링합니다. 인사 기능의 확장이 필요합니다.</div>
+</div>
+<p style="margin-top:14px">에이전트 리더는 <b>도메인 전문성</b>과 <b>결과 책임감</b>을 기준으로 선발하고, AI 활용 역량은 교육으로 보완하라는 것이 강사의 권고였습니다. 권한을 가진 에이전트는 사고도 낼 수 있으므로, 책임질 수 있는 사람에게 먼저 맡겨야 한다는 취지입니다.</p>
+
+<h2>리스크와 통제 방안</h2>
+<table>
+  <tr><th>리스크</th><th>교육에서 제시된 사례·근거</th><th>통제 방안(안)</th></tr>
+  <tr><td>데이터 학습·유출</td><td>개인 계정의 기본 설정은 대화를 모델 개선에 활용하도록 되어 있음. 대화 기록이 소송에서 제출된 사례가 소개됨(미검증).</td><td>기업 계정 사용, 학습 허용 해제, 회사·개인 계정 분리, 데이터 등급별 업로드 기준</td></tr>
+  <tr><td>접근 키·권한 관리</td><td>코드 저장소에 접근 키를 평문으로 저장해 대규모 유출로 이어진 사례가 소개됨(미검증).</td><td>키 비밀 관리, 에이전트별 최소 권한, 폴더·시스템 단위 접근 통제</td></tr>
+  <tr><td>잘못된 판단 강화</td><td>AI가 사용자의 의도에 동조해 무리한 계획을 짜준 소송 사례가 소개됨(미검증).</td><td>비판 역할을 둔 다단 검증, 최종 의사결정은 사람이 내리고 기록으로 남김</td></tr>
+  <tr><td>규제 준수(제약)</td><td>GMP·약물감시·판촉 규정은 교육 범위 밖이며 당사 고유의 고려 사항임.</td><td>GxP 데이터 무결성, 컴퓨터화 시스템 밸리데이션, 공정경쟁규약 준수 검토를 거친 뒤 적용 범위 확대</td></tr>
+  <tr><td>비용</td><td>기업 계정은 종량제여서 사용량이 급증한 사례가 언급됨.</td><td>부서·개인별 사용 한도와 월간 사용량 리포트</td></tr>
+</table>
+
+<h2>제언: 90일 파일럿</h2>
+<div class="tl">
+  <div class="ph"><div class="d">0~30일</div><h4>기반 마련</h4><ul><li>AI 사용·보안 가이드 제정(계정, 데이터 등급, 공유 통제)</li><li>본부별 에이전트 리더 1명 지정</li><li>임원 대상 확대 교육 검토</li></ul></div>
+  <div class="ph"><div class="d">31~60일</div><h4>본부별 스킬 1개</h4><ul><li>본부별로 반복 업무 1개를 스킬로 제작</li><li>예: 경쟁 임상 주간 브리핑, 채용시장 모니터링, 경쟁사 공시 비교</li><li>5컬러 검증 기준 적용</li></ul></div>
+  <div class="ph"><div class="d">61~90일</div><h4>라이브러리와 평가</h4><ul><li>사내 스킬 라이브러리 개설(외부 비공개, 이용 이력 관리)</li><li>절감 시간, 품질, 오류를 측정</li><li>확대 과제와 조직·인사 체계 개선안 보고</li></ul></div>
+</div>
+<div class="ask">
+  <h3>결정 요청 사항</h3>
+  <ul>
+    <li>90일 파일럿 추진과 본부별 에이전트 리더 지정</li>
+    <li>사내 AI 사용·보안 가이드 제정 주관 부서 지정(경영지원·IT 협업안)</li>
+    <li>임원 대상 확대 교육 시행 여부</li>
+  </ul>
+</div>
+
+<div class="foot">
+  <b>작성 근거와 한계</b><br>
+  교육 녹음 7개 파일(약 6시간 32분)을 정리한 회의록을 바탕으로 작성했습니다. 녹음이 없는 구간(1일차 약 1시간, 2일차 약 2시간)은 반영하지 못했습니다. ‘미검증’으로 표시한 사례와 업계 동향은 강사의 구두 발언으로, 1차 출처를 확인하지 않았습니다. 상세 내용과 사실 확인이 필요한 항목은 회의록(Word) 부록에 정리했습니다.
+</div>
+
+</div></div>
+</body>
+</html>

@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>본부별 AI 적용 지도</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#e9edf2; --paper:#fbfcfd; --ink:#132030; --sub:#5b6676; --line:#dfe5ec;
+  --navy:#1f3a5f; --teal:#0e7c86; --teal-soft:#e2f2f3; --amber:#a55a12; --amber-soft:#fbefe2;
+  --card:#ffffff; --chip:#eef2f6;
+  --s1:#7a5af5; --s2:#2f7fd0; --s3:#0e7c86; --s4:#d0782f; --s5:#c2405a;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1218; --paper:#141b24; --ink:#e6ecf4; --sub:#9aa6b6; --line:#263140;
+    --navy:#9cc3ee; --teal:#4fc4cd; --teal-soft:#14323a; --amber:#f0a36b; --amber-soft:#3a2618;
+    --card:#1a2330; --chip:#212c3a;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1218; --paper:#141b24; --ink:#e6ecf4; --sub:#9aa6b6; --line:#263140;
+  --navy:#9cc3ee; --teal:#4fc4cd; --teal-soft:#14323a; --amber:#f0a36b; --amber-soft:#3a2618;
+  --card:#1a2330; --chip:#212c3a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif;word-break:keep-all;line-height:1.5}
+.page{width:1600px;height:1131px;margin:24px auto;background:var(--paper);padding:44px 52px 30px;position:relative;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.08)}
+@media (min-width:1641px){
+  .page{display:flex;flex-direction:column;padding-bottom:70px}
+  #p1 .main{flex:1;min-height:0}
+  #p1 .cards{grid-template-rows:1fr 1fr}
+  #p2 .cards{flex:1.25;min-height:0}
+  #p2 .bottom{flex:1;min-height:0}
+  #p2 .uc li{font-size:15px;padding:10px 0}
+  #p2 .uc li em{font-size:13.5px}
+  #p2 .panel{display:flex;flex-direction:column}
+  #p2 .matrix{flex:1}
+  #p2 .mcol ul{font-size:14.5px}
+  #p2 .mcol li{margin:6px 0}
+  #p2 .gov{font-size:14px;gap:14px 20px}
+  #p1 .uc li{font-size:15px;padding:9px 0}
+  #p1 .uc li em{font-size:13.5px}
+}
+/* responsive fallback for phones: let pages flow */
+@media (max-width:1640px){.page{width:auto;height:auto;margin:16px;padding:28px 16px}}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:24px}
+.eyebrow{font-size:14px;font-weight:700;letter-spacing:.08em;color:var(--teal)}
+h1{margin:4px 0 0;font-size:38px;font-weight:900;letter-spacing:-.01em}
+.sub{color:var(--sub);font-size:15px;margin-top:6px}
+.pg{font-size:13px;color:var(--sub);text-align:right;white-space:nowrap}
+.legend{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;margin-top:8px}
+.tag{display:inline-flex;align-items:center;font-size:11.5px;font-weight:700;border-radius:999px;padding:2px 9px;color:#fff;white-space:nowrap}
+.t1{background:var(--s1)}.t2{background:var(--s2)}.t3{background:var(--s3)}.t4{background:var(--s4)}.t5{background:var(--s5)}
+.main{display:grid;grid-template-columns:350px 1fr;gap:26px;margin-top:26px}
+@media (max-width:1640px){.main{grid-template-columns:1fr}}
+.side{background:var(--navy);color:#fff;border-radius:16px;padding:24px 22px}
+:root[data-theme="dark"] .side{color:#0d1218}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .side{color:#0d1218}}
+.side h3{margin:0 0 4px;font-size:16px;opacity:.85;font-weight:500}
+.big{font-size:40px;font-weight:900;line-height:1.1}
+.big small{font-size:16px;font-weight:500;margin-left:4px}
+.delta{font-size:13px;opacity:.8}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}
+.kv div{background:rgba(255,255,255,.1);border-radius:10px;padding:12px}
+.kv b{display:block;font-size:22px;font-weight:900}
+.kv span{font-size:12.5px;opacity:.85}
+.mix{margin:16px 0 6px;font-size:12.5px;opacity:.85}
+.mixbar{display:flex;height:26px;border-radius:7px;overflow:hidden;font-size:12px;font-weight:700}
+.mixbar div{display:flex;align-items:center;padding:0 8px;color:#132030}
+.group{margin-top:18px;font-size:13px}
+.group .row{display:flex;gap:8px;align-items:baseline;margin:7px 0}
+.group .row b{min-width:118px;font-size:13.5px}
+.group .row span{opacity:.82}
+.insight{margin-top:18px;background:rgba(255,255,255,.12);border-radius:12px;padding:14px;font-size:13.5px}
+.insight b{display:block;font-size:14px;margin-bottom:4px}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:1100px){.cards{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px;display:flex;flex-direction:column}
+.ch{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.ch h2{margin:0;font-size:21px;font-weight:900}
+.src{font-size:11.5px;color:var(--sub);background:var(--chip);border-radius:6px;padding:2px 8px;white-space:nowrap}
+.role{font-size:13px;color:var(--sub);margin:4px 0 10px}
+.uc{list-style:none;margin:0;padding:0}
+.uc li{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;padding:7px 0;border-top:1px dashed var(--line);font-size:14px}
+.uc li:first-child{border-top:none}
+.uc li b{font-weight:700}
+.uc li em{font-style:normal;color:var(--sub);font-size:12.5px;display:block}
+.foot{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:auto;padding-top:10px}
+.qw,.risk{border-radius:10px;padding:8px 11px;font-size:12.5px}
+.qw{background:var(--teal-soft)} .qw b{color:var(--teal)}
+.risk{background:var(--amber-soft)} .risk b{color:var(--amber)}
+.bottom{display:grid;grid-template-columns:1.25fr 1fr;gap:20px;margin-top:20px}
+@media (max-width:1100px){.bottom{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 20px}
+.panel h3{margin:0 0 12px;font-size:17px}
+.matrix{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media (max-width:760px){.matrix{grid-template-columns:1fr}}
+.mcol{border-radius:12px;padding:12px 14px;background:var(--chip)}
+.mcol h4{margin:0 0 2px;font-size:15px}
+.mcol .when{font-size:12px;color:var(--teal);font-weight:700}
+.mcol ul{margin:8px 0 0;padding-left:16px;font-size:13px}
+.mcol li{margin:3px 0}
+.gov{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;font-size:13px}
+@media (max-width:760px){.gov{grid-template-columns:1fr}}
+.gov div b{display:block;font-size:13.5px}
+.gov div span{color:var(--sub)}
+.sources{position:absolute;left:52px;right:52px;bottom:18px;font-size:10.5px;color:var(--sub);line-height:1.45}
+@media (max-width:1640px){.sources{position:static;margin-top:18px}}
+.sources a{color:var(--sub)}
+</style>
+</head>
+<body>
+
+<!-- PAGE 1 -->
+<section class="page" id="p1">
+  <div class="top">
+    <div>
+      <div class="eyebrow">별첨 · 제일약품 AX 검토안</div>
+      <h1>본부별 AI 에이전트 적용 지도</h1>
+      <div class="sub">공시 인용 자료로 본 본부 현황에, 교육에서 실습한 에이전트 5단계 역량을 대응시켰습니다.</div>
+    </div>
+    <div>
+      <div class="pg">1 / 2 · 2026년 10월 · 임상의학본부 작성</div>
+      <div class="legend"><span class="tag t1">1 소환</span><span class="tag t2">2 연결</span><span class="tag t3">3 스킬</span><span class="tag t4">4 멀티 에이전트</span><span class="tag t5">5 자율 루프</span></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <aside class="side">
+      <h3>2025년 연결 매출</h3>
+      <div class="big">5,672<small>억 원</small></div>
+      <div class="delta">전년 7,045억 원 대비 19.5% 감소</div>
+      <div class="mix">매출 구성(연결) · 상품 3,004억 원 / 제품 2,559억 원</div>
+      <div class="mixbar"><div style="width:54%;background:#c9d6e6">상품 54%</div><div style="width:46%;background:#7fd3d9">제품 46%</div></div>
+      <div class="kv">
+        <div><b>671억</b><span>자큐보 매출(2024년 83억 원)</span></div>
+        <div><b>354억</b><span>연구개발비(별도)</span></div>
+        <div><b>1,011명</b><span>직원 수(2025.12.31)</span></div>
+        <div><b>−38%</b><span>상품 매출 증감률</span></div>
+      </div>
+      <div class="group">
+        <div class="row"><b>제일파마홀딩스</b><span>지주회사, 경영지원본부(인사·총무)</span></div>
+        <div class="row"><b>제일약품</b><span>전문의약품</span></div>
+        <div class="row"><b>온코닉테라퓨틱스</b><span>신약 개발(자큐보), 제일약품 자회사</span></div>
+        <div class="row"><b>제일헬스사이언스</b><span>일반의약품(2016년 분할)</span></div>
+        <div class="row"><b>제일앤파트너스</b><span>의약품 유통(2016년 분할)</span></div>
+      </div>
+      <div class="insight"><b>AX 우선순위에 주는 시사점</b>도입 상품에서 자체 제품으로 매출 구조가 바뀌는 중입니다. 따라서 연구개발 생산성, 자체 제품의 근거 생성과 마케팅, 생산·품질 효율이 AI 투자의 1순위 후보입니다.</div>
+    </aside>
+
+    <div class="cards">
+      <article class="card">
+        <div class="ch"><h2>임상의학본부</h2><span class="src">2026.3 보직 보도</span></div>
+        <div class="role">임상시험 운영, 약물감시(PV), 마케팅 협업 근거 생성</div>
+        <ul class="uc">
+          <li><span class="tag t5">루프</span><div><b>임상 운영 대시보드</b><em>마일스톤·등록률·예산 집행을 추적하고 지연을 조기 경보. 사내 운영 데이터는 MCP로 연결</em></div></li>
+          <li><span class="tag t3">스킬</span><div><b>경쟁 임상 주간 브리핑</b><em>ClinicalTrials.gov·PubMed를 정기 수집하고 요약해 카카오톡·메일로 발송</em></div></li>
+          <li><span class="tag t1">소환</span><div><b>프로토콜·보고서 다중 검토</b><em>통계·규제·의학 관점의 평가자가 초안을 검토. PV 문헌은 1차 선별까지만 맡김</em></div></li>
+        </ul>
+        <div class="foot"><div class="qw"><b>Quick win</b> 경쟁 임상 주간 브리핑</div><div class="risk"><b>유의</b> 환자 식별정보 입력 금지, 이상사례 판단과 보고는 사람</div></div>
+      </article>
+
+      <article class="card">
+        <div class="ch"><h2>중앙연구소</h2><span class="src">2026.6 부소장 영입 보도</span></div>
+        <div class="role">신약·제제 연구개발</div>
+        <ul class="uc">
+          <li><span class="tag t4">멀티</span><div><b>문헌·특허 지형 분석</b><em>타깃별로 여러 에이전트가 동시에 조사하고 근거와 출처를 붙여 종합</em></div></li>
+          <li><span class="tag t3">스킬</span><div><b>실험 데이터 탐색 분석</b><em>엑셀 결과로 통계 요약, 차트, 보고서 초안을 자동 생성</em></div></li>
+          <li><span class="tag t2">연결</span><div><b>경쟁 파이프라인 추적</b><em>임상 등록·학회·공시를 연결해 변화가 생기면 알림</em></div></li>
+        </ul>
+        <div class="foot"><div class="qw"><b>Quick win</b> 타깃별 문헌 요약 스킬</div><div class="risk"><b>유의</b> 미공개 구조·데이터는 승인된 기업 환경에서만 사용</div></div>
+      </article>
+
+      <article class="card">
+        <div class="ch"><h2>글로벌사업본부</h2><span class="src">2022 신설 · 2026.10 K-VIP 보도</span></div>
+        <div class="role">해외 사업, 라이선스 인·아웃, 신약 개발 총괄</div>
+        <ul class="uc">
+          <li><span class="tag t4">멀티</span><div><b>라이선스 후보·파트너 스크리닝</b><em>파이프라인·공시·딜 데이터를 기준표에 따라 점수화</em></div></li>
+          <li><span class="tag t3">스킬</span><div><b>국가별 규제·시장 브리프</b><em>진출 대상국의 허가 경로와 시장 규모를 같은 형식으로 비교</em></div></li>
+          <li><span class="tag t1">소환</span><div><b>파트너 미팅 자료 사전 검증</b><em>평가자를 ‘상대 기업 BD 담당자’ 시각으로 설정해 예상 질문과 약점을 도출</em></div></li>
+        </ul>
+        <div class="foot"><div class="qw"><b>Quick win</b> 미팅 전 상대사 프로파일</div><div class="risk"><b>유의</b> 비밀유지계약 대상 자료는 외부 AI 입력 금지</div></div>
+      </article>
+
+      <article class="card">
+        <div class="ch"><h2>영업·마케팅</h2><span class="src">부문·본부 인사 보도</span></div>
+        <div class="role">종합병원·개인병원 영업, 제품 마케팅(자큐보, 리피토플러스 등)</div>
+        <ul class="uc">
+          <li><span class="tag t3">스킬</span><div><b>제품 KPI 대시보드</b><em>처방·매출 데이터를 인터랙티브 대시보드로 만들고 이상 신호에 주석을 붙임</em></div></li>
+          <li><span class="tag t5">루프</span><div><b>경쟁 제품·학회 동향 클리핑</b><em>매일 정해진 시각에 수집하고 요약해 담당 PM에게 발송</em></div></li>
+          <li><span class="tag t1">소환</span><div><b>판촉 자료 사전 점검</b><em>허가사항·공정경쟁규약 위반 소지를 비판 역할이 먼저 표시. 최종 승인은 기존 심의 절차</em></div></li>
+        </ul>
+        <div class="foot"><div class="qw"><b>Quick win</b> 경쟁 동향 데일리 클리핑</div><div class="risk"><b>유의</b> 의료인 개인정보, 허가 외 표현 금지</div></div>
+      </article>
+    </div>
+  </div>
+
+  <div class="sources">현황 출처: 2025년 실적·매출 구성·자큐보·연구개발비는 공시를 인용한 보도와 기업정보 사이트 기준(메가경제, Daum 뉴스, FnGuide 인용). 직원 수는 잡코리아(2025.12.31 기준), 계열 구조는 회사 연혁 자료 기준. 작업 환경의 네트워크 정책으로 DART 원문을 직접 열람하지 못했으므로, 수치는 DART 2025년 사업보고서로 최종 확인이 필요합니다. 상품·제품 비중은 두 금액의 합 기준이며 기타 매출은 제외했습니다.</div>
+</section>
+
+<!-- PAGE 2 -->
+<section class="page" id="p2">
+  <div class="top">
+    <div>
+      <div class="eyebrow">별첨 · 제일약품 AX 검토안</div>
+      <h1>생산·품질·경영지원과 실행 순서</h1>
+      <div class="sub">GxP 영역은 ‘보조 도구’로 시작하고, 검증 체계를 갖춘 뒤 연결 범위를 넓힙니다.</div>
+    </div>
+    <div>
+      <div class="pg">2 / 2 · 2026년 10월 · 임상의학본부 작성</div>
+      <div class="legend"><span class="tag t1">1 소환</span><span class="tag t2">2 연결</span><span class="tag t3">3 스킬</span><span class="tag t4">4 멀티 에이전트</span><span class="tag t5">5 자율 루프</span></div>
+    </div>
+  </div>
+
+  <div class="cards" style="grid-template-columns:repeat(4,1fr);margin-top:24px">
+    <article class="card">
+      <div class="ch"><h2>생산본부</h2><span class="src">2026.4 인사 보도</span></div>
+      <div class="role">의약품 제조, 생산계획</div>
+      <ul class="uc">
+        <li><span class="tag t3">스킬</span><div><b>배치·설비 데이터 분석</b><em>수율과 가동률의 이상 패턴을 찾아 원인 후보를 제시</em></div></li>
+        <li><span class="tag t2">연결</span><div><b>SOP·작업지침 검색 도우미</b><em>현행 승인본 문서만 근거로 답변</em></div></li>
+        <li><span class="tag t4">멀티</span><div><b>생산계획 시나리오 비교</b><em>수요·재고·설비 제약을 반영한 대안 비교</em></div></li>
+      </ul>
+      <div class="foot" style="grid-template-columns:1fr"><div class="risk"><b>유의</b> GMP 기록 시스템과 연결하려면 컴퓨터화 시스템 밸리데이션과 데이터 무결성 확보가 먼저</div></div>
+    </article>
+
+    <article class="card">
+      <div class="ch"><h2>품질경영본부</h2><span class="src">2026.4 인사 보도</span></div>
+      <div class="role">품질보증·품질관리, 규제 대응</div>
+      <ul class="uc">
+        <li><span class="tag t3">스킬</span><div><b>일탈·CAPA·불만 추세 분석</b><em>분기별 추세와 재발 패턴을 자동으로 요약</em></div></li>
+        <li><span class="tag t1">소환</span><div><b>실사 대비 문서 정합성 점검</b><em>문서 간 불일치를 비판 역할이 먼저 찾아 표시</em></div></li>
+        <li><span class="tag t5">루프</span><div><b>규제 개정 모니터링</b><em>식약처·FDA·EMA 개정 사항을 주간 단위로 영향 분류</em></div></li>
+      </ul>
+      <div class="foot" style="grid-template-columns:1fr"><div class="risk"><b>유의</b> 품질 판정과 출하 승인은 사람이 하며, AI 산출물에도 추적성을 기록</div></div>
+    </article>
+
+    <article class="card">
+      <div class="ch"><h2>경영지원본부</h2><span class="src">지주 · 2026.4 신설 보도</span></div>
+      <div class="role">인사·총무(제일파마홀딩스)</div>
+      <ul class="uc">
+        <li><span class="tag t2">연결</span><div><b>채용 시장 모니터링</b><em>교육 실습에서 확인: 사이트 3곳을 12분에 수집·정리</em></div></li>
+        <li><span class="tag t4">멀티</span><div><b>직무 분해와 하이브리드 인력 설계</b><em>업무를 AI 수행·협업·사람 전담으로 분류</em></div></li>
+        <li><span class="tag t3">스킬</span><div><b>사내 스킬 라이브러리 운영</b><em>등록·심사·이용 이력 관리, 에이전트 리더 육성</em></div></li>
+      </ul>
+      <div class="foot" style="grid-template-columns:1fr"><div class="risk"><b>유의</b> 임직원 개인정보와 평가 정보는 입력 금지 또는 가명 처리</div></div>
+    </article>
+
+    <article class="card">
+      <div class="ch"><h2>재무·기획</h2><span class="src">기능 기준(조직명 미확인)</span></div>
+      <div class="role">실적 관리, 경영 보고, IR</div>
+      <ul class="uc">
+        <li><span class="tag t2">연결</span><div><b>경쟁사 공시 비교</b><em>DART MCP로 분기 실적을 자연어로 조회하고 비교</em></div></li>
+        <li><span class="tag t5">루프</span><div><b>환율·원가 조기 경보</b><em>교육 과제 사례: 기준선을 벗어나면 알림 발송</em></div></li>
+        <li><span class="tag t1">소환</span><div><b>월간 보고 질의 생성</b><em>교육 과제 사례: 보고 자료로 경영진 예상 질문을 생성</em></div></li>
+      </ul>
+      <div class="foot" style="grid-template-columns:1fr"><div class="risk"><b>유의</b> 공시 전 실적은 내부자 정보이므로 외부 AI 입력 금지</div></div>
+    </article>
+  </div>
+
+  <div class="bottom">
+    <div class="panel">
+      <h3>실행 순서(안)</h3>
+      <div class="matrix">
+        <div class="mcol"><div class="when">0~3개월 · 공개 데이터</div><h4>Quick win</h4><ul><li>경쟁 임상 주간 브리핑</li><li>경쟁 제품·학회 동향 클리핑</li><li>채용 시장 모니터링</li><li>경쟁사 공시 비교</li></ul></div>
+        <div class="mcol"><div class="when">3~12개월 · 사내 데이터</div><h4>전략 과제</h4><ul><li>임상 운영 대시보드</li><li>일탈·CAPA 추세 분석</li><li>배치·설비 데이터 분석</li><li>라이선스 후보 스크리닝</li></ul></div>
+        <div class="mcol"><div class="when">상시 · 전사</div><h4>공통 기반</h4><ul><li>사내 스킬 라이브러리</li><li>MCP 연결 표준과 권한 관리</li><li>에이전트 리더 육성</li><li>성과 측정(절감 시간·오류)</li></ul></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h3>공통 통제 원칙</h3>
+      <div class="gov">
+        <div><b>데이터 등급</b><span>공개·내부·기밀·개인정보로 나누고 등급별 입력 가능 여부를 정함</span></div>
+        <div><b>계정·학습 설정</b><span>기업 계정을 쓰고 학습 허용을 해제하며 개인 계정과 분리</span></div>
+        <div><b>최소 권한</b><span>에이전트별로 접근할 폴더와 시스템을 지정하고 키는 비밀 관리</span></div>
+        <div><b>사람의 최종 판단</b><span>품질·안전성·판촉 판단은 담당자가 내리고 기록으로 남김</span></div>
+        <div><b>다단 검증</b><span>생성과 검증을 분리하고 원본과 대조</span></div>
+        <div><b>비용 한도</b><span>부서별 사용 한도와 월간 사용량 리포트</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sources">조직 근거: 임상의학본부(약사공론, 2026.3), 경영지원본부 신설(이투데이·아시아경제, 2026.4), 품질경영본부·생산본부(2026.4 임원 인사 보도), 중앙연구소(아시아경제, 2026.6), 글로벌사업본부(메디칼업저버, 2022.1 / 아시아투데이·서울신문 K-VIP, 2026.10). 영업·마케팅의 하위 조직명은 인사 보도에 나온 부문명 기준이며, 재무·기획은 조직명을 확인하지 못해 기능 단위로 표기했습니다. 적용 과제는 교육 실습과 과제 사례를 바탕으로 한 제안이며, 실제 효과는 파일럿으로 측정해야 합니다.</div>
+</section>
+
+</body>
+</html>
