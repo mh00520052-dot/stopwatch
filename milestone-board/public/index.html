@@ -387,6 +387,15 @@ button.bbtn:hover{box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,trans
 .bk1{border:1px solid var(--line);border-radius:8px;padding:8px 12px}
 .bk1 .k{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px}
 .bk1 .v{font-size:22px;font-weight:500;margin-top:2px}
+.bdata-w{margin-top:8px;max-height:none}
+.bdata{width:100%;font-size:12px}
+.bdata th,.bdata td{position:static;padding:5px 6px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line)}
+.bdata th:first-child{text-align:left}
+.bdata thead th{color:var(--muted);font-weight:500}
+.bdata thead th.now{color:var(--fg);font-weight:700}
+.bdata tr.plan td{color:var(--muted)}
+.bdata tr.act td{color:var(--fg);font-weight:600}
+.bdata td.sum{font-weight:700;border-left:1px solid var(--line)}
 .bk1 .bsub{font-size:11px;color:var(--muted);margin-top:2px}
 .bcheck{font-size:12.5px;padding:7px 10px;border-radius:8px;margin:0}
 .bcheck.ok{background:color-mix(in srgb,var(--ok) 10%,var(--panel));color:var(--ok)}
@@ -402,7 +411,7 @@ button.bbtn:hover{box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,trans
 .bmc span{display:block}
 .bmc .p{color:var(--muted)}
 .bmc .a{font-weight:600}
-.bmc.over .a{color:var(--warn)}
+.bmc.over .a{color:inherit}
 .mb{width:100%}
 .mb td,.mb th{padding:3px 4px;position:static}
 .mb input{width:100%;box-sizing:border-box;font-family:var(--mono);text-align:right}
@@ -608,7 +617,6 @@ button.bbtn:hover{box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,trans
     <div class="legend" style="margin:6px 0 4px">
       <span><svg width="22" height="12" aria-hidden="true"><rect x="1" y="1" width="20" height="10" rx="2" fill="var(--soft)" stroke="var(--accent)" stroke-dasharray="3 2"/></svg>PLAN</span>
       <span><svg width="22" height="12" aria-hidden="true"><rect x="1" y="1" width="20" height="10" rx="2" fill="var(--accent)"/></svg>ACTUAL</span>
-      <span><svg width="22" height="12" aria-hidden="true"><rect x="1" y="1" width="20" height="10" rx="2" fill="var(--warn)"/></svg>그 달 계획보다 많이 집행 (예산 초과 아님)</span>
     </div>
     <div class="gantt-box" id="b-box"><div id="b-chart"></div><div class="tip" id="b-tip" hidden></div></div>
     <div id="b-detail"></div>
@@ -1201,7 +1209,7 @@ button.bbtn:hover{box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,trans
       const g = sv('g', { 'data-k': `b|${r.p.id}|${o.k}` }, svg);
       sv('rect', { x: x0, y: r.y, width: w, height: r.h, fill: 'transparent' }, g);
       if (o.v.plan != null) { const hgt = (hh * o.v.plan) / max; sv('rect', { x: x0 + w * 0.08, y: base - hgt, width: Math.max(1.5, w * 0.84), height: hgt, fill: `url(#gp${r.gi})`, stroke: col, 'stroke-width': 0.8, 'stroke-dasharray': '2 2' }, g); }
-      if (o.v.actual != null) { const hgt = (hh * o.v.actual) / max; sv('rect', { x: x0 + w * 0.25, y: base - hgt, width: Math.max(1.2, w * 0.5), height: hgt, fill: o.v.plan != null && +o.v.actual > +o.v.plan ? 'var(--warn)' : col }, g); }
+      if (o.v.actual != null) { const hgt = (hh * o.v.actual) / max; sv('rect', { x: x0 + w * 0.25, y: base - hgt, width: Math.max(1.2, w * 0.5), height: hgt, fill: col }, g); }
     });
   }
 
@@ -1494,21 +1502,16 @@ button.bbtn:hover{box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,trans
     const nowK = today.slice(0, 7);
     const yP = agg.reduce((a, o) => a + o.pl, 0), yA = agg.reduce((a, o) => a + o.ac, 0);
     const toDateP = agg.filter((o) => o.k <= nowK).reduce((a, o) => a + o.pl, 0);
-    const kpi = (label, val, sub, warn) => h('div', { class: 'bk1' }, h('div', { class: 'k' }, label), h('div', { class: 'v mono', style: warn ? `color:${warn === 'pace' ? 'var(--warn)' : 'var(--bad)'}` : '' }, val), sub ? h('div', { class: 'bsub' }, sub) : null);
-    // tie back to the top card: the same 전체 예산, and how much of it is spread over months
-    let totalAppr = 0, allocAll = 0, spentAll = 0;
-    rows.forEach((p) => { const ap = approved(p); if (ap != null) totalAppr += ap; spentAll += spent(p) || 0; Object.values(bm(p)).forEach((v) => { if (v.plan != null) allocAll += v.plan; }); });
+    const kpi = (label, val, tag) => h('div', { class: 'bk1' }, h('div', { class: 'k' }, tag, ' ', label), h('div', { class: 'v mono' }, val));
     $('#b-kpi').replaceChildren(
-      kpi(`${y}년 월별 계획`, fmtN(yP), `오늘까지 ${fmtN(toDateP)}`),
-      kpi(`${y}년 집행`, fmtN(yA), `오늘까지 월 계획 대비 ${toDateP ? Math.round((yA / toDateP) * 100) + '%' : '—'}${toDateP && yA > toDateP ? ' · 계획보다 빨리 집행' : ''}`, toDateP && yA > toDateP ? 'pace' : false),
-      kpi('전체 예산 중 월별 배분', totalAppr ? `${Math.round((allocAll / totalAppr) * 100)}%` : '—', `${fmtN(allocAll)} / ${fmtN(totalAppr)} · 미배분 ${fmtN(totalAppr - allocAll)}`, totalAppr && allocAll > totalAppr),
-      kpi('전체 예산 대비 집행률', totalAppr ? `${Math.round((spentAll / totalAppr) * 100)}%` : '—', `집행 ${fmtN(spentAll)} / 전체 예산 ${fmtN(totalAppr)} (위 카드와 같음)`, totalAppr && spentAll > totalAppr));
+      kpi(`${y}년 PLAN 합계`, fmtN(yP), h('span', { class: 'lane-tag plan' }, '◇ PLAN')),
+      kpi(`${y}년 ACTUAL 집행 합계`, fmtN(yA), h('span', { class: 'lane-tag act' }, '● ACTUAL')));
     if (!agg.some((o) => o.hp || o.ha)) {
       box.replaceChildren(h('div', { class: 'empty' }, `${y}년 월별 예산이 아직 없습니다. 간트의 ‘₩ 월별 예산’ 줄이나 과제 ‘상세’에서 입력하세요.`));
       $('#b-detail').replaceChildren();
       return;
     }
-    const W = Math.max(320, box.clientWidth), H = 230, L = 56, R = 10, T = 12, B = 28;
+    const W = Math.max(320, box.clientWidth), H = 250, L = 56, R = 10, T = 26, B = 28;
     const raw = Math.max(...agg.flatMap((o) => [o.pl, o.ac]), 1);
     const mag = 10 ** Math.floor(Math.log10(raw)), maxV = Math.ceil(raw / mag) * mag;
     const yv = (v) => T + (H - T - B) * (1 - v / maxV), bw = (W - L - R) / 12;
@@ -1527,12 +1530,22 @@ button.bbtn:hover{box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,trans
       const sel = S.bMode === 'detail' && S.bSel === o.k;
       if (o.k === nowK || sel) sv('rect', { x: x0 + 1, y: T, width: bw - 2, height: H - T - B, rx: 4, fill: sel ? 'var(--accent)' : 'var(--soft)', opacity: sel ? 0.12 : 0.8 }, svg);
       if (o.hp) sv('rect', { x: x0 + bw * 0.14, y: yv(o.pl), width: bw * 0.34, height: Math.max(1, yv(0) - yv(o.pl)), rx: 2, fill: 'url(#bph)', stroke: 'var(--accent)', 'stroke-width': 1, 'stroke-dasharray': '3 2' }, svg);
-      if (o.ha) sv('rect', { x: x0 + bw * 0.52, y: yv(o.ac), width: bw * 0.34, height: Math.max(1, yv(0) - yv(o.ac)), rx: 2, fill: o.hp && o.ac > o.pl ? 'var(--warn)' : 'var(--accent)' }, svg);
+      if (o.ha) sv('rect', { x: x0 + bw * 0.52, y: yv(o.ac), width: bw * 0.34, height: Math.max(1, yv(0) - yv(o.ac)), rx: 2, fill: 'var(--accent)' }, svg);
+      if (bw >= 44) { // value labels when the bars are wide enough; the table below always has the numbers
+        if (o.hp) sv('text', { x: x0 + bw * 0.31, y: yv(o.pl) - 5, 'text-anchor': 'middle', fill: 'var(--muted)', 'font-size': bw >= 70 ? 11 : 9.5, 'font-family': 'var(--mono)' }, svg).textContent = fmtN(o.pl);
+        if (o.ha) sv('text', { x: x0 + bw * 0.69, y: yv(o.ac) - 5, 'text-anchor': 'middle', fill: 'var(--fg)', 'font-size': bw >= 70 ? 11 : 9.5, 'font-weight': 700, 'font-family': 'var(--mono)' }, svg).textContent = fmtN(o.ac);
+      }
       sv('text', { x: x0 + bw / 2, y: H - 9, 'text-anchor': 'middle', fill: o.k === nowK ? 'var(--fg)' : 'var(--muted)', 'font-size': 11, 'font-weight': o.k === nowK ? 700 : 400, 'font-family': 'var(--mono)' }, svg).textContent = MON[i];
       const hit = sv('rect', { x: x0, y: T, width: bw, height: H - T, fill: 'transparent', 'data-bk': o.k }, svg);
       if (S.bMode === 'detail') hit.style.cursor = 'pointer';
     });
-    box.replaceChildren(svg);
+    const cellV = (has, v) => h('td', { class: 'mono' }, has ? fmtN(v) : '—');
+    const table = h('div', { class: 'tw bdata-w' }, h('table', { class: 'bdata' },
+      h('thead', null, h('tr', null, h('th', null, `${y}년`), ...MON.map((mn, i) => h('th', { class: agg[i].k === nowK ? 'now' : null }, mn)), h('th', null, '합계'))),
+      h('tbody', null,
+        h('tr', { class: 'plan' }, h('th', null, h('span', { class: 'lane-tag plan' }, '◇ PLAN')), ...agg.map((o) => cellV(o.hp, o.pl)), h('td', { class: 'mono sum' }, fmtN(yP))),
+        h('tr', { class: 'act' }, h('th', null, h('span', { class: 'lane-tag act' }, '● ACTUAL')), ...agg.map((o) => cellV(o.ha, o.ac)), h('td', { class: 'mono sum' }, fmtN(yA))))));
+    box.replaceChildren(svg, table);
     const tip = $('#b-tip');
     svg.onpointermove = (e) => {
       const k = e.target.getAttribute('data-bk'); const o = agg.find((q) => q.k === k);
