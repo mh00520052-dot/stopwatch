@@ -1,0 +1,9 @@
+{
+  "name": "milestone-board",
+  "private": true,
+  "type": "module",
+  "description": "임상 마일스톤 보드 — Netlify 웹앱 (정적 화면 + Function API + Blobs 저장소)",
+  "dependencies": {
+    "@netlify/blobs": "^8.1.0"
+  }
+}

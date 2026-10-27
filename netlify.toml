@@ -1,0 +1,14 @@
+# Netlify deploy for the 임상 마일스톤 보드 web app (folder milestone-board/).
+# The stopwatch pages at the repository root are not part of this site.
+[build]
+  base = "milestone-board"
+  publish = "public"
+  functions = "netlify/functions"
+  command = "echo 'static site, no build step'"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "same-origin"
