@@ -387,6 +387,12 @@ button.bbtn:hover{box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,trans
 .bk1{border:1px solid var(--line);border-radius:8px;padding:8px 12px}
 .bk1 .k{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px}
 .bk1 .v{font-size:22px;font-weight:500;margin-top:2px}
+.bk1 .bsub{font-size:11px;color:var(--muted);margin-top:2px}
+.bcheck{font-size:12.5px;padding:7px 10px;border-radius:8px;margin:0}
+.bcheck.ok{background:color-mix(in srgb,var(--ok) 10%,var(--panel));color:var(--ok)}
+.bcheck.warn{background:color-mix(in srgb,var(--warn) 12%,var(--panel));color:var(--warn)}
+.bcheck.bad{background:color-mix(in srgb,var(--bad) 10%,var(--panel));color:var(--bad)}
+.bhint{font-size:10.5px;color:var(--warn);margin-top:2px}
 #b-chart svg{display:block}
 .b-h3{font-size:13px;font-weight:600;margin:14px 0 6px}
 .bmx td,.bmx th{text-align:right;padding:4px 6px}
@@ -1312,12 +1318,15 @@ button.bbtn:hover{box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,trans
     Object.values(bm(p)).forEach((v) => { if (v.plan != null) { pl += v.plan; hasP = true; } if (v.actual != null) { ac += v.actual; hasA = true; } });
     return { pl, ac, hasP, hasA, has: hasP || hasA };
   }
-  const approved = (p) => (anyCat(p.budgetTotal) ? sumCat(p.budgetTotal) : isNum((p.budget || {}).plan) ? +p.budget.plan : null);
+  // 전체 예산 = sum of category approved budgets; a category left blank counts its monthly plan total instead.
+  const approved = (p) => { const cs = catSums(p), v = CATS.map(([c]) => cs[c].appr).filter((x) => x != null); return v.length ? v.reduce((a, b) => a + b, 0) : null; };
   const spent = (p) => { const t = budgetTotals(p); return t.hasA ? t.ac : isNum((p.budget || {}).actual) ? +p.budget.actual : null; };
   function catSums(p) {
-    const r = Object.fromEntries(CATS.map(([c]) => [c, { appr: isNum((p.budgetTotal || {})[c]) ? +p.budgetTotal[c] : null, plan: 0, actual: 0 }]));
-    if (!anyCat(p.budgetTotal) && isNum((p.budget || {}).plan)) r.etc.appr = +p.budget.plan; // an earlier single figure counts as 기타
+    const t = p.budgetTotal || {};
+    const r = Object.fromEntries(CATS.map(([c]) => [c, { appr: null, plan: 0, actual: 0, fromPlan: false }]));
     Object.values(bmRaw(p)).forEach((v) => { const n = normM(v); CATS.forEach(([c]) => { if (isNum(n.plan[c])) r[c].plan += +n.plan[c]; if (isNum(n.actual[c])) r[c].actual += +n.actual[c]; }); });
+    CATS.forEach(([c]) => { if (isNum(t[c])) r[c].appr = +t[c]; else if (r[c].plan > 0) { r[c].appr = r[c].plan; r[c].fromPlan = true; } });
+    if (!CATS.some(([c]) => r[c].appr != null) && isNum((p.budget || {}).plan)) r.etc.appr = +p.budget.plan; // an earlier single figure counts as 기타
     return r;
   }
   const pctTxt = (a, b) => (b ? `${Math.round((a / b) * 100)}%` : '—');
@@ -1341,10 +1350,10 @@ button.bbtn:hover{box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,trans
     const kpis = h('div', { class: 'bkpis' }), catBody = h('tbody');
     const catCells = {};
     const refresh = () => {
-      const appr = sumCat(total);
-      let exe = 0, pln = 0;
+      let exe = 0, pln = 0, appr = 0, unalloc = 0;
       const per = Object.fromEntries(CATS.map(([c]) => [c, { plan: 0, actual: 0 }]));
       Object.values(months).forEach((n) => CATS.forEach(([c]) => { if (isNum(n.plan[c])) { per[c].plan += +n.plan[c]; pln += +n.plan[c]; } if (isNum(n.actual[c])) { per[c].actual += +n.actual[c]; exe += +n.actual[c]; } }));
+      CATS.forEach(([c]) => { per[c].appr = isNum(total[c]) ? +total[c] : per[c].plan; per[c].fromPlan = !isNum(total[c]) && per[c].plan > 0; appr += per[c].appr; unalloc += per[c].appr - per[c].plan; });
       const rem = appr - exe;
       kpis.replaceChildren(
         h('div', { class: 'bk1' }, h('div', { class: 'k' }, '전체 예산'), h('div', { class: 'v mono' }, fmtN(appr))),
@@ -1352,13 +1361,20 @@ button.bbtn:hover{box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,trans
         h('div', { class: 'bk1' }, h('div', { class: 'k' }, '잔여액'), h('div', { class: 'v mono', style: rem < 0 ? 'color:var(--bad)' : '' }, fmtN(rem))),
         h('div', { class: 'bk1' }, h('div', { class: 'k' }, '집행률'), h('div', { class: 'v mono', style: appr && exe > appr ? 'color:var(--bad)' : '' }, pctTxt(exe, appr)), barEl(appr ? exe / appr : 0)));
       CATS.forEach(([c]) => {
-        const a = isNum(total[c]) ? +total[c] : 0, x = catCells[c];
+        const a = per[c].appr, x = catCells[c], u = a - per[c].plan;
+        x.hint.textContent = per[c].fromPlan ? `비어 있어 계획 합계 ${fmtN(a)} 사용` : '';
+        x.un.textContent = fmtN(u); x.un.style.color = u < 0 ? 'var(--bad)' : u > 0 ? 'var(--warn)' : 'var(--ok)';
         x.plan.textContent = fmtN(per[c].plan); x.act.textContent = fmtN(per[c].actual);
         x.rem.textContent = fmtN(a - per[c].actual); x.rem.style.color = a - per[c].actual < 0 ? 'var(--bad)' : '';
         x.pct.replaceChildren(h('span', { class: 'mono' }, pctTxt(per[c].actual, a)), barEl(a ? per[c].actual / a : 0));
       });
       const t = catCells.total;
       t.appr.textContent = fmtN(appr); t.plan.textContent = fmtN(pln); t.act.textContent = fmtN(exe); t.rem.textContent = fmtN(rem);
+      t.un.textContent = fmtN(unalloc); t.un.style.color = unalloc < 0 ? 'var(--bad)' : unalloc > 0 ? 'var(--warn)' : 'var(--ok)';
+      check.textContent = Math.abs(unalloc) < 0.05 ? '✓ 월별 계획 합계가 전체 예산과 일치합니다.'
+        : unalloc > 0 ? `월별 계획에 아직 배분하지 않은 예산이 ${fmtN(unalloc)} 있습니다 (전체 예산 ${fmtN(appr)} − 월별 계획 합계 ${fmtN(pln)}).`
+        : `월별 계획 합계가 전체 예산보다 ${fmtN(-unalloc)} 많습니다. 승인 예산이나 월별 계획을 확인하세요.`;
+      check.className = 'bcheck ' + (Math.abs(unalloc) < 0.05 ? 'ok' : unalloc > 0 ? 'warn' : 'bad');
       t.rem.style.color = rem < 0 ? 'var(--bad)' : '';
       t.pct.replaceChildren(h('span', { class: 'mono' }, pctTxt(exe, appr)), barEl(appr ? exe / appr : 0));
       if (gridTotals) gridTotals();
@@ -1366,14 +1382,15 @@ button.bbtn:hover{box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,trans
     CATS.forEach(([c, label]) => {
       const inp = h('input', { type: 'number', min: 0, step: 'any', id: `bt-${c}`, value: total[c] ?? '', disabled: ro, 'aria-label': `${label} 승인 예산` });
       inp.addEventListener('input', () => { total[c] = num(inp.value); refresh(); });
-      catCells[c] = { plan: h('td', { class: 'mono r' }), act: h('td', { class: 'mono r' }), rem: h('td', { class: 'mono r' }), pct: h('td', { class: 'pc' }) };
-      catBody.append(h('tr', null, h('td', null, label), h('td', null, inp), catCells[c].plan, catCells[c].act, catCells[c].rem, catCells[c].pct));
+      catCells[c] = { hint: h('div', { class: 'bhint' }), plan: h('td', { class: 'mono r' }), un: h('td', { class: 'mono r' }), act: h('td', { class: 'mono r' }), rem: h('td', { class: 'mono r' }), pct: h('td', { class: 'pc' }) };
+      catBody.append(h('tr', null, h('td', null, label), h('td', null, inp, catCells[c].hint), catCells[c].plan, catCells[c].un, catCells[c].act, catCells[c].rem, catCells[c].pct));
     });
-    catCells.total = { appr: h('td', { class: 'mono r' }), plan: h('td', { class: 'mono r' }), act: h('td', { class: 'mono r' }), rem: h('td', { class: 'mono r' }), pct: h('td', { class: 'pc' }) };
+    catCells.total = { appr: h('td', { class: 'mono r' }), plan: h('td', { class: 'mono r' }), un: h('td', { class: 'mono r' }), act: h('td', { class: 'mono r' }), rem: h('td', { class: 'mono r' }), pct: h('td', { class: 'pc' }) };
+    const check = h('p', { class: 'bcheck' });
     const tt = catCells.total;
-    catBody.append(h('tr', { class: 'tot' }, h('td', null, '합계'), tt.appr, tt.plan, tt.act, tt.rem, tt.pct));
+    catBody.append(h('tr', { class: 'tot' }, h('td', null, '합계'), tt.appr, tt.plan, tt.un, tt.act, tt.rem, tt.pct));
     const catTable = h('table', { class: 'bdt' },
-      h('thead', null, h('tr', null, h('th', null, '항목'), h('th', null, '승인 예산'), h('th', { class: 'r' }, '월별 계획 합계'), h('th', { class: 'r' }, '집행액'), h('th', { class: 'r' }, '잔여액'), h('th', null, '집행률'))),
+      h('thead', null, h('tr', null, h('th', null, '항목'), h('th', null, '승인 예산'), h('th', { class: 'r' }, '월별 계획 합계'), h('th', { class: 'r', title: '승인 예산 − 월별 계획 합계' }, '미배분'), h('th', { class: 'r' }, '집행액'), h('th', { class: 'r' }, '잔여액'), h('th', null, '집행률'))),
       catBody);
 
     // monthly grid: tab 'plan' (월별 계획) or 'actual' (월별 집행)
@@ -1452,7 +1469,7 @@ button.bbtn:hover{box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,trans
     openDrawer(`예산 상세 · ${p.no}. ${p.protocol} (백만원)`, [
       kpis,
       h('h2', null, '항목별 예산'),
-      h('div', { class: 'tw' }, catTable),
+      h('div', { class: 'tw' }, catTable), check,
       h('h2', null, '월별 계획 · 집행'),
       gridBox, err,
     ], [h('span', { class: 'note' }, ro ? '보기 전용 권한입니다.' : '빈 칸은 미입력으로 저장됩니다.'),
@@ -1474,12 +1491,15 @@ button.bbtn:hover{box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,trans
     const nowK = today.slice(0, 7);
     const yP = agg.reduce((a, o) => a + o.pl, 0), yA = agg.reduce((a, o) => a + o.ac, 0);
     const toDateP = agg.filter((o) => o.k <= nowK).reduce((a, o) => a + o.pl, 0);
-    const kpi = (label, val, tag) => h('div', { class: 'bk1' }, h('div', { class: 'k' }, tag || null, label), h('div', { class: 'v mono' }, val));
+    const kpi = (label, val, sub, warn) => h('div', { class: 'bk1' }, h('div', { class: 'k' }, label), h('div', { class: 'v mono', style: warn ? 'color:var(--bad)' : '' }, val), sub ? h('div', { class: 'bsub' }, sub) : null);
+    // tie back to the top card: the same 전체 예산, and how much of it is spread over months
+    let totalAppr = 0, allocAll = 0, spentAll = 0;
+    rows.forEach((p) => { const ap = approved(p); if (ap != null) totalAppr += ap; spentAll += spent(p) || 0; Object.values(bm(p)).forEach((v) => { if (v.plan != null) allocAll += v.plan; }); });
     $('#b-kpi').replaceChildren(
-      kpi(' 연간 PLAN', fmtN(yP), h('span', { class: 'lane-tag plan' }, '◇')),
-      kpi(' 오늘까지 PLAN', fmtN(toDateP), h('span', { class: 'lane-tag plan' }, '◇')),
-      kpi(' 집행 ACTUAL', fmtN(yA), h('span', { class: 'lane-tag act' }, '●')),
-      kpi('오늘까지 집행률', toDateP ? `${Math.round((yA / toDateP) * 100)}%` : '—'));
+      kpi(`${y}년 월별 계획`, fmtN(yP), `오늘까지 ${fmtN(toDateP)}`),
+      kpi(`${y}년 집행`, fmtN(yA), `오늘까지 계획 대비 ${toDateP ? Math.round((yA / toDateP) * 100) + '%' : '—'}`, toDateP && yA > toDateP),
+      kpi('전체 예산 중 월별 배분', totalAppr ? `${Math.round((allocAll / totalAppr) * 100)}%` : '—', `${fmtN(allocAll)} / ${fmtN(totalAppr)} · 미배분 ${fmtN(totalAppr - allocAll)}`, totalAppr && allocAll > totalAppr),
+      kpi('전체 예산 대비 집행률', totalAppr ? `${Math.round((spentAll / totalAppr) * 100)}%` : '—', `집행 ${fmtN(spentAll)} / 전체 예산 ${fmtN(totalAppr)} (위 카드와 같음)`, totalAppr && spentAll > totalAppr));
     if (!agg.some((o) => o.hp || o.ha)) {
       box.replaceChildren(h('div', { class: 'empty' }, `${y}년 월별 예산이 아직 없습니다. 간트의 ‘₩ 월별 예산’ 줄이나 과제 ‘상세’에서 입력하세요.`));
       $('#b-detail').replaceChildren();
